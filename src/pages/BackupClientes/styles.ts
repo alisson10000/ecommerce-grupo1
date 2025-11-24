@@ -1,0 +1,62 @@
+import { StyleSheet } from "react-native";
+
+export default StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  header: {
+    padding: 20,
+    backgroundColor: "#fff",
+    elevation: 2,
+    marginBottom: 16,
+  },
+  headerTitle: { fontSize: 24, fontWeight: "bold" },
+  card: {
+    backgroundColor: "#fff",
+    margin: 16,
+    padding: 20,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  cardTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 16 },
+  subTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  label: { color: "#666", fontSize: 16 },
+  value: { fontWeight: "bold", fontSize: 16 },
+  divider: { height: 1, backgroundColor: "#eee", marginVertical: 12 },
+  infoText: { color: "#666", marginBottom: 4 },
+  actions: {
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  button: {
+    flex: 0.48,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  syncButton: { backgroundColor: "#28a745" },
+  restoreButton: { backgroundColor: "#dc3545" },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  listContainer: { padding: 16 },
+  listTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+  itemContainer: {
+    backgroundColor: "#fff",
+    padding: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    elevation: 1,
+  },
+  itemTitle: { fontWeight: "bold", fontSize: 16 },
+  itemSubtitle: { color: "#999", fontSize: 12 },
+  emptyText: { textAlign: "center", color: "#999", marginTop: 20 },
+});
