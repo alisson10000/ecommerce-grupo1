@@ -1,32 +1,72 @@
 import React from "react";
-import { View, Text, Image, Button } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator
+} from "react-native";
 import { useCart } from "../../context/CartContext";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/types";
+import styles from "./styles";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetails">;
 
-export default function ProductDetails({ route }: Props) {
+export default function ProductDetails({ route, navigation }: Props) {
   const { product } = route.params;
   const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = React.useState(false);
+
+  const handleAddToCart = async () => {
+    setIsAdding(true);
+    try {
+      addToCart(product);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Image
-        source={{ uri: product.image }}
-        style={{ width: "100%", height: 280, resizeMode: "contain" }}
-      />
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: product.image }} style={styles.image} />
+        </View>
 
-      <Text style={{ fontSize: 22, marginTop: 10 }}>{product.title}</Text>
+        <View style={styles.contentContainer}>
+          {product.category && (
+            <Text style={styles.category}>{product.category}</Text>
+          )}
 
-      <Text style={{ marginTop: 10, fontSize: 18, color: "green" }}>
-        R$ {product.price}
-      </Text>
+          <Text style={styles.title}>{product.title}</Text>
 
-      <Button
-        title="Adicionar ao carrinho"
-        onPress={() => addToCart(product)}
-      />
+          <Text style={styles.price}>R$ {product.price.toFixed(2)}</Text>
+
+          <Text style={styles.descriptionTitle}>Descrição</Text>
+          <Text style={styles.description}>{product.description}</Text>
+        </View>
+      </ScrollView>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.addButton, isAdding && styles.addButtonDisabled]}
+          onPress={handleAddToCart}
+          disabled={isAdding}
+        >
+          {isAdding ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.addButtonText}>Adicionar ao Carrinho</Text>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
