@@ -49,6 +49,11 @@ export default StyleSheet.create({
     color: "#2a9d8f",
     marginBottom: 20
   },
+  stock: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 10
+  },
   descriptionTitle: {
     fontSize: 18,
     fontWeight: "600",
@@ -68,20 +73,54 @@ export default StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#eee"
   },
+  buttonsRow: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
   addButton: {
     backgroundColor: "#2a9d8f",
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    marginRight: 10
+  },
+  addButtonFlex: {
+    flex: 1
   },
   addButtonText: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "600"
+    fontWeight: "600",
+    textAlign: "center"
   },
   addButtonDisabled: {
     backgroundColor: "#ccc"
+  },
+  deleteButton: {
+    backgroundColor: "#e63946",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 60
+  },
+  deleteButtonText: {
+    fontSize: 24
+  },
+  editButton: {
+    backgroundColor: "#2a9d8f",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 60,
+    marginRight: 10
+  },
+  editButtonText: {
+    fontSize: 24
   },
   header: {
     backgroundColor: "#fff",
@@ -96,7 +135,97 @@ export default StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
+    width: "100%",
+    maxWidth: 400,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 20,
+    width: "100%",
+    maxWidth: 400,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#e63946",
+    marginBottom: 15,
+    textAlign: "center"
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 10,
+    textAlign: "center"
+  },
+  modalProductName: {
+    fontSize: 16,
+    fontWeight: "600",
     color: "#2a9d8f",
-    fontWeight: "600"
+    marginBottom: 20,
+    textAlign: "center",
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
+    backgroundColor: "#f9f9f9"
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48
+  },
+  modalButtonCancel: {
+    backgroundColor: "#f0f0f0",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginRight: 5
+  },
+  modalButtonCancelText: {
+    color: "#666",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center"
+  },
+  modalButtonConfirm: {
+    backgroundColor: "#e63946",
+    marginLeft: 5
+  },
+  modalButtonConfirmText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center"
   }
 });

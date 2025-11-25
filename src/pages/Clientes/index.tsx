@@ -10,7 +10,6 @@ export default function Clientes() {
     const [modalVisible, setModalVisible] = useState(false);
     const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
 
-    // Form states
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
     const [email, setEmail] = useState('');

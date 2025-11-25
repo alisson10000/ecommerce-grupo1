@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// URL DO MOCKAPI (OBRIGATÓRIA)
 const BASE_URL = 'https://69245cb43ad095fb8473e61e.mockapi.io/backup';
 
 export type Cliente = {
