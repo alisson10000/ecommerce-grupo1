@@ -5,6 +5,7 @@ import { useTheme } from "../hooks/useTheme";
 import Home from "../pages/Home";
 import Products from "../pages/Products";
 import Cart from "../pages/Cart";
+import { ChatBot } from "../pages/ChatBot";
 
 const Tab = createBottomTabNavigator();
 
