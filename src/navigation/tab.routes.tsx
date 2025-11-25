@@ -1,5 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useTheme } from "../hooks/useTheme";
 
 import Home from "../pages/Home";
 import Products from "../pages/Products";
@@ -9,12 +10,23 @@ import { ChatBot } from "../pages/ChatBot";
 const Tab = createBottomTabNavigator();
 
 export default function TabRoutes() {
+  const { theme } = useTheme();
+
   return (
-    <Tab.Navigator id={undefined} screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Products" component={Products} />
-      <Tab.Screen name="Cart" component={Cart} />
-      <Tab.Screen name="ChatBot" component={ChatBot} />
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
+        tabBarStyle: {
+          backgroundColor: theme.card,
+          borderTopColor: theme.border,
+        },
+      }}
+    >
+      <Tab.Screen name="Home" component={Home} options={{ tabBarLabel: 'Início' }} />
+      <Tab.Screen name="Products" component={Products} options={{ tabBarLabel: 'Produtos' }} />
+      <Tab.Screen name="Cart" component={Cart} options={{ tabBarLabel: 'Carrinho' }} />
     </Tab.Navigator>
   );
 }
