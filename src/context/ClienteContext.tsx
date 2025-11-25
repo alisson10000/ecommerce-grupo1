@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Cliente, getClientes as getClientesMock, createCliente as createClienteMock, updateCliente as updateClienteMock } from '../api/mockApi';
 
-// Placeholder para API Spring Boot
 const SPRING_API_URL = 'http://localhost:8080/api'; // Ajustar quando a URL real estiver disponível
 
 type SyncStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -29,7 +28,6 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
     const [lastSync, setLastSync] = useState<Date | null>(null);
 
-    // Carregar clientes do AsyncStorage ao iniciar
     useEffect(() => {
         loadClientesFromStorage();
     }, []);
@@ -58,13 +56,11 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     };
 
-    // Simulação de busca na API Spring Boot (Substituir por chamada real)
     const fetchSpringClientes = async (): Promise<Cliente[]> => {
-        // TODO: Implementar chamada real quando a API estiver pronta
-        // const response = await axios.get(`${SPRING_API_URL}/clientes`);
-        // return response.data;
 
-        // Retornando dados locais por enquanto para não quebrar sem a API
+
+
+
         console.warn('Usando dados locais simulando API Spring Boot');
         return clientes;
     };
@@ -83,11 +79,10 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const addCliente = async (clienteData: Omit<Cliente, 'id' | 'clienteId'>) => {
         try {
-            // Simular criação na API Spring Boot
-            // const response = await axios.post(`${SPRING_API_URL}/clientes`, clienteData);
-            // const newCliente = response.data;
 
-            // Simulação local
+
+
+
             const newCliente: Cliente = {
                 ...clienteData,
                 clienteId: Date.now(), // ID temporário
@@ -97,7 +92,6 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const newClientes = [...clientes, newCliente];
             await saveClientesToStorage(newClientes);
 
-            // Tentar sincronizar com MockAPI em background
             syncSingleClienteToMock(newCliente);
 
         } catch (error) {
@@ -108,16 +102,15 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const updateCliente = async (clienteId: number, clienteData: Partial<Cliente>) => {
         try {
-            // Simular update na API Spring Boot
-            // await axios.put(`${SPRING_API_URL}/clientes/${clienteId}`, clienteData);
+
+
 
             const newClientes = clientes.map(c =>
                 c.clienteId === clienteId ? { ...c, ...clienteData } : c
             );
             await saveClientesToStorage(newClientes);
 
-            // Tentar sincronizar com MockAPI em background
-            // Precisaria achar o ID do MockAPI correspondente primeiro
+
         } catch (error) {
             console.error('Erro ao atualizar cliente:', error);
             throw error;
@@ -138,14 +131,12 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const startTime = Date.now();
 
         try {
-            // PASSO 1: Buscar da API Spring Boot
+
             const springClientes = await fetchSpringClientes();
 
-            // PASSO 2: Salvar Localmente
             await saveClientesToStorage(springClientes);
 
-            // PASSO 3: Enviar para MockAPI
-            // Primeiro, buscar o que já tem no MockAPI para evitar duplicatas ou decidir update
+
             const mockClientes = await getClientesMock();
             setBackupClientes(mockClientes);
 
@@ -182,8 +173,8 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setSyncStatus('loading');
         try {
             const mockClientes = await getClientesMock();
-            // Converter formato se necessário e salvar localmente
-            // Assumindo que o formato é compatível
+
+
             await saveClientesToStorage(mockClientes);
             setBackupClientes(mockClientes);
             setSyncStatus('success');
@@ -205,7 +196,6 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const localOnly = clientes.filter(c => !backupIds.has(c.clienteId)).length;
             const backupOnly = mockClientes.filter(c => !localIds.has(c.clienteId)).length;
 
-            // Simplificação de conflitos: mesmo ID mas dados diferentes (ex: nome)
             let conflicts = 0;
             clientes.forEach(c => {
                 const backup = mockClientes.find(b => b.clienteId === c.clienteId);

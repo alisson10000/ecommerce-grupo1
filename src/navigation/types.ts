@@ -4,6 +4,7 @@ export type RootStackParamList = {
   Login: undefined;
   HomeTabs: undefined;
   ProductDetails: { product: Product };
+  Payment: undefined;
 };
 
 export type RootTabParamList = {
