@@ -17,13 +17,23 @@ type ViaCepResponse = {
     erro?: boolean;
 };
 
+export type ClienteFormData = {
+    nome: string;
+    email: string;
+    cpf: string;
+    telefone: string;
+    numero: string;
+    complemento?: string;
+    cep: string;
+};
+
 export interface ClienteContextData {
     clientes: Cliente[];
     syncStatus: SyncStatus;
     lastSync: Date | null;
     loadClientes: () => Promise<void>;
-    addCliente: (cliente: Cliente) => Promise<void>;
-    updateCliente: (id: number, cliente: Partial<Cliente>) => Promise<void>;
+    addCliente: (cliente: ClienteFormData) => Promise<void>;
+    updateCliente: (id: number, cliente: Partial<ClienteFormData>) => Promise<void>;
     syncClientes: () => Promise<void>;
     restoreBackup: () => Promise<void>;
     backupClientes: Cliente[];
@@ -68,11 +78,14 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const fetchSpringClientes = async (): Promise<Cliente[]> => {
-        // TODO: Implementar chamada real quando a API estiver pronta
-        // const response = await axios.get(`${SPRING_API_URL}/clientes`);
-        // return response.data;
-        console.warn('Usando dados locais simulando API Spring Boot');
-        return clientes;
+        try {
+            const response = await axios.get(`${SPRING_API_URL}/clientes`);
+            return response.data;
+        } catch (error) {
+            console.error('Erro ao buscar clientes da API Spring Boot:', error);
+            console.warn('Usando dados locais como fallback');
+            return clientes;
+        }
     };
 
     const loadClientes = async () => {
@@ -87,51 +100,33 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     };
 
-    const addCliente = async (clienteData: Cliente) => {
+    const addCliente = async (clienteData: ClienteFormData) => {
         try {
-            // Simular criação na API Spring Boot
-            // const response = await axios.post(`${SPRING_API_URL}/clientes`, clienteData);
-            // const newCliente = response.data;
-
-            const newCliente: Cliente = {
-                ...clienteData,
-                id: clienteData.id || Date.now(), // ID temporário se não vier do banco
-            };
-
+            const response = await axios.post(`${SPRING_API_URL}/clientes`, clienteData);
+            const newCliente: Cliente = response.data;
             const newClientes = [...clientes, newCliente];
             await saveClientesToStorage(newClientes);
-
-            syncSingleClienteToMock(newCliente);
-
+            console.log('Cliente criado com sucesso:', newCliente);
         } catch (error) {
-            console.error('Erro ao adicionar cliente:', error);
+            console.error('Erro ao adicionar cliente na API Spring Boot:', error);
             throw error;
         }
     };
 
-    const updateCliente = async (id: number, clienteData: Partial<Cliente>) => {
+    const updateCliente = async (id: number, clienteData: Partial<ClienteFormData>) => {
         try {
-            // Simular update na API Spring Boot
-            // await axios.put(`${SPRING_API_URL}/clientes/${id}`, clienteData);
-
-            const newClientes = clientes.map(c =>
-                c.id === id ? { ...c, ...clienteData } : c
-            );
+            const response = await axios.put(`${SPRING_API_URL}/clientes/${id}`, clienteData);
+            const updatedCliente: Cliente = response.data;
+            const newClientes = clientes.map(c => c.id === id ? updatedCliente : c);
             await saveClientesToStorage(newClientes);
-
+            console.log('Cliente atualizado com sucesso:', updatedCliente);
         } catch (error) {
-            console.error('Erro ao atualizar cliente:', error);
+            console.error('Erro ao atualizar cliente na API Spring Boot:', error);
             throw error;
         }
     };
 
-    const syncSingleClienteToMock = async (cliente: Cliente) => {
-        try {
-            await createClienteMock(cliente);
-        } catch (error) {
-            console.error('Erro ao sincronizar cliente individual com MockAPI:', error);
-        }
-    };
+
 
     const syncClientes = async () => {
         setSyncStatus('loading');
