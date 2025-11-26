@@ -106,6 +106,7 @@ export default function Clientes() {
         if (!email.includes('@')) { Alert.alert('Erro', 'Email inválido'); return false; }
         if (telefone.length !== 11) { Alert.alert('Erro', 'Telefone deve ter 11 dígitos'); return false; }
         if (!numero.trim()) { Alert.alert('Erro', 'Número é obrigatório'); return false; }
+        if (cep.length !== 8) { Alert.alert('Erro', 'CEP deve ter 8 dígitos'); return false; }
         // Endereço é obrigatório, garantido pelo CEP
         if (!logradouro) { Alert.alert('Erro', 'Busque um CEP válido'); return false; }
         return true;
@@ -114,27 +115,28 @@ export default function Clientes() {
     const handleSave = async () => {
         if (!validateForm()) return;
 
-        const clienteData: any = {
+        const clienteData = {
             nome,
             cpf,
             email,
             telefone,
             numero,
-            complemento,
-            endereco_id: 1 // Placeholder, o backend deve gerenciar isso com base no CEP/Endereço enviado
+            complemento: complemento || undefined,
+            cep,
         };
 
         try {
             if (editingCliente) {
                 await updateCliente(editingCliente.id!, clienteData);
-                Alert.alert('Sucesso', 'Cliente atualizado!');
+                Alert.alert('Sucesso', 'Cliente atualizado com sucesso!');
             } else {
                 await addCliente(clienteData);
-                Alert.alert('Sucesso', 'Cliente cadastrado!');
+                Alert.alert('Sucesso', 'Cliente cadastrado com sucesso!');
             }
             setModalVisible(false);
+            await loadClientes();
         } catch (error) {
-            Alert.alert('Erro', 'Falha ao salvar cliente');
+            Alert.alert('Erro', 'Falha ao salvar cliente. Verifique se a API está rodando.');
         }
     };
 
