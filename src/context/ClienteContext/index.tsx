@@ -1,23 +1,34 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { Cliente, getClientes as getClientesMock, createCliente as createClienteMock, updateCliente as updateClienteMock } from '../api/mockApi';
+import { Cliente, getClientes as getClientesMock, createCliente as createClienteMock, updateCliente as updateClienteMock } from '../../api/mockApi';
 
-const SPRING_API_URL = 'http://localhost:8080/api'; // Ajustar quando a URL real estiver disponível
+const SPRING_API_URL = 'http://localhost:8080/api';
 
 type SyncStatus = 'idle' | 'loading' | 'success' | 'error';
 
-interface ClienteContextData {
+type ViaCepResponse = {
+    cep: string;
+    logradouro: string;
+    complemento: string;
+    bairro: string;
+    localidade: string;
+    uf: string;
+    erro?: boolean;
+};
+
+export interface ClienteContextData {
     clientes: Cliente[];
     syncStatus: SyncStatus;
     lastSync: Date | null;
     loadClientes: () => Promise<void>;
-    addCliente: (cliente: Omit<Cliente, 'id' | 'clienteId'>) => Promise<void>;
+    addCliente: (cliente: Cliente) => Promise<void>;
     updateCliente: (id: number, cliente: Partial<Cliente>) => Promise<void>;
     syncClientes: () => Promise<void>;
     restoreBackup: () => Promise<void>;
-    backupClientes: Cliente[]; // Clientes vindos do backup
+    backupClientes: Cliente[];
     checkBackupDifferences: () => Promise<{ localOnly: number; backupOnly: number; conflicts: number }>;
+    fetchAddressByCep: (cep: string) => Promise<ViaCepResponse>;
 }
 
 const ClienteContext = createContext<ClienteContextData>({} as ClienteContextData);
@@ -57,10 +68,9 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const fetchSpringClientes = async (): Promise<Cliente[]> => {
-
-
-
-
+        // TODO: Implementar chamada real quando a API estiver pronta
+        // const response = await axios.get(`${SPRING_API_URL}/clientes`);
+        // return response.data;
         console.warn('Usando dados locais simulando API Spring Boot');
         return clientes;
     };
@@ -77,16 +87,15 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     };
 
-    const addCliente = async (clienteData: Omit<Cliente, 'id' | 'clienteId'>) => {
+    const addCliente = async (clienteData: Cliente) => {
         try {
-
-
-
+            // Simular criação na API Spring Boot
+            // const response = await axios.post(`${SPRING_API_URL}/clientes`, clienteData);
+            // const newCliente = response.data;
 
             const newCliente: Cliente = {
                 ...clienteData,
-                clienteId: Date.now(), // ID temporário
-                id: undefined // ID do MockAPI será gerado lá
+                id: clienteData.id || Date.now(), // ID temporário se não vier do banco
             };
 
             const newClientes = [...clientes, newCliente];
@@ -100,16 +109,15 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     };
 
-    const updateCliente = async (clienteId: number, clienteData: Partial<Cliente>) => {
+    const updateCliente = async (id: number, clienteData: Partial<Cliente>) => {
         try {
-
-
+            // Simular update na API Spring Boot
+            // await axios.put(`${SPRING_API_URL}/clientes/${id}`, clienteData);
 
             const newClientes = clientes.map(c =>
-                c.clienteId === clienteId ? { ...c, ...clienteData } : c
+                c.id === id ? { ...c, ...clienteData } : c
             );
             await saveClientesToStorage(newClientes);
-
 
         } catch (error) {
             console.error('Erro ao atualizar cliente:', error);
@@ -131,11 +139,8 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const startTime = Date.now();
 
         try {
-
             const springClientes = await fetchSpringClientes();
-
             await saveClientesToStorage(springClientes);
-
 
             const mockClientes = await getClientesMock();
             setBackupClientes(mockClientes);
@@ -143,12 +148,16 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
             let syncedCount = 0;
 
             for (const localCliente of springClientes) {
-                const existsInMock = mockClientes.find(mc => mc.clienteId === localCliente.clienteId);
+                if (!localCliente.id) continue;
+
+                const existsInMock = mockClientes.find(mc => mc.id === localCliente.id);
 
                 if (existsInMock) {
-                    if (existsInMock.id) {
-                        await updateClienteMock(existsInMock.id, localCliente);
-                    }
+                    // MockAPI usa ID string, nosso ID é number. 
+                    // Assumindo que o MockAPI preserva o ID enviado ou gera um novo.
+                    // Se o MockAPI gera ID próprio, precisaríamos mapear.
+                    // Para simplificar, vamos tentar update se ID bater.
+                    await updateClienteMock(String(existsInMock.id), localCliente);
                 } else {
                     await createClienteMock(localCliente);
                 }
@@ -173,8 +182,6 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setSyncStatus('loading');
         try {
             const mockClientes = await getClientesMock();
-
-
             await saveClientesToStorage(mockClientes);
             setBackupClientes(mockClientes);
             setSyncStatus('success');
@@ -190,15 +197,15 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const mockClientes = await getClientesMock();
             setBackupClientes(mockClientes);
 
-            const localIds = new Set(clientes.map(c => c.clienteId));
-            const backupIds = new Set(mockClientes.map(c => c.clienteId));
+            const localIds = new Set(clientes.map(c => c.id));
+            const backupIds = new Set(mockClientes.map(c => c.id));
 
-            const localOnly = clientes.filter(c => !backupIds.has(c.clienteId)).length;
-            const backupOnly = mockClientes.filter(c => !localIds.has(c.clienteId)).length;
+            const localOnly = clientes.filter(c => c.id && !backupIds.has(c.id)).length;
+            const backupOnly = mockClientes.filter(c => c.id && !localIds.has(c.id)).length;
 
             let conflicts = 0;
             clientes.forEach(c => {
-                const backup = mockClientes.find(b => b.clienteId === c.clienteId);
+                const backup = mockClientes.find(b => b.id === c.id);
                 if (backup && backup.nome !== c.nome) {
                     conflicts++;
                 }
@@ -208,6 +215,22 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } catch (error) {
             console.error('Erro ao verificar diferenças:', error);
             return { localOnly: 0, backupOnly: 0, conflicts: 0 };
+        }
+    };
+
+    const fetchAddressByCep = async (cep: string): Promise<ViaCepResponse> => {
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+
+            if (data.erro) {
+                throw new Error('CEP não encontrado');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Erro ao buscar CEP:', error);
+            throw error;
         }
     };
 
@@ -222,14 +245,15 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
             syncClientes,
             restoreBackup,
             backupClientes,
-            checkBackupDifferences
+            checkBackupDifferences,
+            fetchAddressByCep
         }}>
             {children}
         </ClienteContext.Provider>
     );
 };
 
-export function useClientes() {
+export function useClientes(): ClienteContextData {
     const context = useContext(ClienteContext);
     if (!context) {
         throw new Error('useClientes deve ser usado dentro de um ClienteProvider');
