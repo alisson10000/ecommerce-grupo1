@@ -7,7 +7,7 @@ import ProductDetails from "../pages/ProductsDetails";
 import Payment from "../pages/Payment";
 import { RootStackParamList } from "./types";
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack:any = createNativeStackNavigator<RootStackParamList>();
 
 export default function StackRoutes() {
   return (
