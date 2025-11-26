@@ -13,7 +13,7 @@ export default function TabRoutes() {
   const { theme } = useTheme();
 
   return (
-    <Tab.Navigator
+    <Tab.Navigator  id={undefined} 
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.primary,
@@ -24,9 +24,29 @@ export default function TabRoutes() {
         },
       }}
     >
-      <Tab.Screen name="Home" component={Home} options={{ tabBarLabel: 'Início' }} />
-      <Tab.Screen name="Products" component={Products} options={{ tabBarLabel: 'Produtos' }} />
-      <Tab.Screen name="Cart" component={Cart} options={{ tabBarLabel: 'Carrinho' }} />
+      <Tab.Screen
+        name="Home"
+        component={Home}
+        options={{ tabBarLabel: "Início" }}
+      />
+
+      <Tab.Screen
+        name="Products"
+        component={Products}
+        options={{ tabBarLabel: "Produtos" }}
+      />
+
+      <Tab.Screen
+        name="Cart"
+        component={Cart}
+        options={{ tabBarLabel: "Carrinho" }}
+      />
+
+      <Tab.Screen
+        name="ChatBot"
+        component={ChatBot}
+        options={{ tabBarLabel: "Assistente" }}
+      />
     </Tab.Navigator>
   );
 }
