@@ -11,11 +11,15 @@ import {
     RefreshControl,
     ScrollView
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useClientes } from '../../context/ClienteContext';
+import { useAuth } from '../../context/AuthContext';
 import { Cliente } from '../../api/mockApi';
 import styles from './styles';
 
 export default function Clientes() {
+    const navigation = useNavigation<any>();
+    const { logout } = useAuth();
     const { clientes, loadClientes, addCliente, updateCliente, syncStatus, fetchAddressByCep } = useClientes();
     const [searchText, setSearchText] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
@@ -140,6 +144,26 @@ export default function Clientes() {
         }
     };
 
+    const handleLogout = () => {
+        Alert.alert(
+            'Logout',
+            'Deseja realmente sair?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Sair',
+                    onPress: async () => {
+                        await logout();
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Login' }]
+                        });
+                    }
+                }
+            ]
+        );
+    };
+
     const renderItem = ({ item }: { item: Cliente }) => (
         <TouchableOpacity style={styles.card} onPress={() => handleOpenModal(item)}>
             <Text style={styles.cardTitle}>{item.nome}</Text>
@@ -152,6 +176,9 @@ export default function Clientes() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Clientes</Text>
+                <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                    <Text style={styles.logoutText}>Sair</Text>
+                </TouchableOpacity>
             </View>
 
             <TextInput
