@@ -1,19 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import {
+    View,
+    Text,
+    FlatList,
+    TouchableOpacity,
+    TextInput,
+    Modal,
+    Alert,
+    ActivityIndicator,
+    RefreshControl,
+    ScrollView
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useClientes } from '../../context/ClienteContext';
+import { useAuth } from '../../context/AuthContext';
 import { Cliente } from '../../api/mockApi';
 import styles from './styles';
 
 export default function Clientes() {
-    const { clientes, loadClientes, addCliente, updateCliente, syncStatus } = useClientes();
+    const navigation = useNavigation<any>();
+    const { logout } = useAuth();
+    const { clientes, loadClientes, addCliente, updateCliente, deleteCliente, syncStatus, fetchAddressByCep, syncClientes } = useClientes();
     const [searchText, setSearchText] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
 
+    // Form states
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
     const [email, setEmail] = useState('');
-    const [endereco, setEndereco] = useState('');
+    const [telefone, setTelefone] = useState('');
+    const [cep, setCep] = useState('');
+    const [numero, setNumero] = useState('');
+    const [complemento, setComplemento] = useState('');
+
+    // Address display states
+    const [logradouro, setLogradouro] = useState('');
+    const [bairro, setBairro] = useState('');
+    const [cidade, setCidade] = useState('');
+    const [uf, setUf] = useState('');
+    const [loadingCep, setLoadingCep] = useState(false);
 
     useEffect(() => {
         loadClientes();
@@ -30,46 +56,162 @@ export default function Clientes() {
             setNome(cliente.nome);
             setCpf(cliente.cpf);
             setEmail(cliente.email);
-            setEndereco(cliente.endereco);
+            setTelefone(cliente.telefone);
+            setNumero(cliente.numero);
+            setComplemento(cliente.complemento || '');
+            // TODO: Se tivermos o CEP salvo, poderíamos carregar. 
+            // Como o banco só tem endereco_id, precisaríamos buscar o endereço completo.
+            // Por simplificação, deixamos em branco na edição se não tivermos os dados locais.
+            setCep('');
+            setLogradouro('');
+            setBairro('');
+            setCidade('');
+            setUf('');
         } else {
             setEditingCliente(null);
             setNome('');
             setCpf('');
             setEmail('');
-            setEndereco('');
+            setTelefone('');
+            setCep('');
+            setNumero('');
+            setComplemento('');
+            setLogradouro('');
+            setBairro('');
+            setCidade('');
+            setUf('');
         }
         setModalVisible(true);
+    };
+
+    const handleBlurCep = async () => {
+        if (cep.length !== 8) return;
+        setLoadingCep(true);
+        try {
+            const address = await fetchAddressByCep(cep);
+            setLogradouro(address.logradouro);
+            setBairro(address.bairro);
+            setCidade(address.localidade);
+            setUf(address.uf);
+        } catch (error) {
+            Alert.alert('Erro', 'CEP não encontrado');
+            setLogradouro('');
+            setBairro('');
+            setCidade('');
+            setUf('');
+        } finally {
+            setLoadingCep(false);
+        }
     };
 
     const validateForm = () => {
         if (!nome.trim()) { Alert.alert('Erro', 'Nome é obrigatório'); return false; }
         if (cpf.length !== 11) { Alert.alert('Erro', 'CPF deve ter 11 dígitos'); return false; }
         if (!email.includes('@')) { Alert.alert('Erro', 'Email inválido'); return false; }
-        if (!endereco.trim()) { Alert.alert('Erro', 'Endereço é obrigatório'); return false; }
+        if (telefone.length !== 11) { Alert.alert('Erro', 'Telefone deve ter 11 dígitos'); return false; }
+        if (!numero.trim()) { Alert.alert('Erro', 'Número é obrigatório'); return false; }
+        if (cep.length !== 8) { Alert.alert('Erro', 'CEP deve ter 8 dígitos'); return false; }
+        // Endereço é obrigatório, garantido pelo CEP
+        if (!logradouro) { Alert.alert('Erro', 'Busque um CEP válido'); return false; }
         return true;
     };
 
     const handleSave = async () => {
         if (!validateForm()) return;
 
+        const clienteData = {
+            nome,
+            cpf,
+            email,
+            telefone,
+            numero,
+            complemento: complemento || undefined,
+            cep,
+        };
+
         try {
             if (editingCliente) {
-                await updateCliente(editingCliente.clienteId, { nome, cpf, email, endereco });
-                Alert.alert('Sucesso', 'Cliente atualizado!');
+                await updateCliente(editingCliente.id!, clienteData);
+                Alert.alert('Sucesso', 'Cliente atualizado com sucesso!');
             } else {
-                await addCliente({
-                    nome,
-                    cpf,
-                    email,
-                    endereco,
-                    dataCadastro: new Date().toISOString()
-                });
-                Alert.alert('Sucesso', 'Cliente cadastrado!');
+                await addCliente(clienteData);
+                Alert.alert('Sucesso', 'Cliente cadastrado com sucesso!');
             }
             setModalVisible(false);
+            await loadClientes();
         } catch (error) {
-            Alert.alert('Erro', 'Falha ao salvar cliente');
+            Alert.alert('Erro', 'Falha ao salvar cliente. Verifique se a API está rodando.');
         }
+    };
+
+    const handleLogout = () => {
+        Alert.alert(
+            'Logout',
+            'Deseja realmente sair?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Sair',
+                    onPress: async () => {
+                        await logout();
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Login' }]
+                        });
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleBackup = () => {
+        Alert.alert(
+            'Fazer Backup',
+            'Deseja realmente fazer backup de todos os clientes para o MockAPI?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Confirmar',
+                    onPress: async () => {
+                        try {
+                            await syncClientes();
+                            Alert.alert('Sucesso', 'Backup realizado com sucesso!');
+                        } catch (error) {
+                            Alert.alert('Erro', 'Falha ao fazer backup.');
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleDelete = async () => {
+        if (!editingCliente || !editingCliente.id) {
+            Alert.alert('Erro', 'Não é possível deletar este cliente.');
+            return;
+        }
+
+        Alert.alert(
+            'Confirmar Exclusão',
+            `Deseja realmente excluir o cliente ${editingCliente.nome}? Esta ação não pode ser desfeita.`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Excluir',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteCliente(editingCliente.id!);
+                            Alert.alert('Sucesso', 'Cliente excluído com sucesso!');
+                            setModalVisible(false);
+                            await loadClientes();
+                        } catch (error) {
+                            Alert.alert('Erro', 'Falha ao excluir cliente. Verifique se a API está rodando.');
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const renderItem = ({ item }: { item: Cliente }) => (
@@ -84,6 +226,9 @@ export default function Clientes() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Clientes</Text>
+                <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                    <Text style={styles.logoutText}>Sair</Text>
+                </TouchableOpacity>
             </View>
 
             <TextInput
@@ -98,7 +243,7 @@ export default function Clientes() {
             ) : (
                 <FlatList
                     data={filteredClientes}
-                    keyExtractor={(item) => String(item.clienteId)}
+                    keyExtractor={(item) => String(item.id || Math.random())}
                     renderItem={renderItem}
                     contentContainerStyle={styles.list}
                     refreshControl={
@@ -108,28 +253,66 @@ export default function Clientes() {
                 />
             )}
 
-            <TouchableOpacity style={styles.fab} onPress={() => handleOpenModal()}>
-                <Text style={styles.fabText}>+</Text>
-            </TouchableOpacity>
+            <View>
+                <TouchableOpacity style={styles.fabBackup} onPress={handleBackup}>
+                    <Text style={styles.fabText}>☁️</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.fab} onPress={() => handleOpenModal()}>
+                    <Text style={styles.fabText}>+</Text>
+                </TouchableOpacity>
+            </View>
 
             <Modal visible={modalVisible} animationType="slide" transparent={true}>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>{editingCliente ? 'Editar Cliente' : 'Novo Cliente'}</Text>
+                        <ScrollView>
+                            <Text style={styles.modalTitle}>{editingCliente ? 'Editar Cliente' : 'Novo Cliente'}</Text>
 
-                        <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
-                        <TextInput style={styles.input} placeholder="CPF (apenas números)" value={cpf} onChangeText={setCpf} keyboardType="numeric" maxLength={11} />
-                        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-                        <TextInput style={styles.input} placeholder="Endereço" value={endereco} onChangeText={setEndereco} />
+                            <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
+                            <TextInput style={styles.input} placeholder="CPF (11 dígitos)" value={cpf} onChangeText={setCpf} keyboardType="numeric" maxLength={11} />
+                            <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                            <TextInput style={styles.input} placeholder="Telefone (11 dígitos)" value={telefone} onChangeText={setTelefone} keyboardType="phone-pad" maxLength={11} />
 
-                        <View style={styles.modalButtons}>
-                            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
-                                <Text style={styles.buttonText}>Cancelar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSave}>
-                                <Text style={styles.buttonText}>Salvar</Text>
-                            </TouchableOpacity>
-                        </View>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1 }]}
+                                    placeholder="CEP (8 dígitos)"
+                                    value={cep}
+                                    onChangeText={setCep}
+                                    keyboardType="numeric"
+                                    maxLength={8}
+                                    onBlur={handleBlurCep}
+                                />
+                                {loadingCep && <ActivityIndicator color="#0000ff" />}
+                            </View>
+
+                            {logradouro ? (
+                                <View style={{ marginBottom: 10, padding: 10, backgroundColor: '#f0f0f0', borderRadius: 8 }}>
+                                    <Text style={{ fontWeight: 'bold' }}>Endereço:</Text>
+                                    <Text>{logradouro}, {bairro}</Text>
+                                    <Text>{cidade} - {uf}</Text>
+                                </View>
+                            ) : null}
+
+                            <TextInput style={styles.input} placeholder="Número" value={numero} onChangeText={setNumero} />
+                            <TextInput style={styles.input} placeholder="Complemento (Opcional)" value={complemento} onChangeText={setComplemento} />
+
+                            <View style={styles.modalButtons}>
+                                <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
+                                    <Text style={styles.buttonText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSave}>
+                                    <Text style={styles.buttonText}>Salvar</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {editingCliente && (
+                                <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={handleDelete}>
+                                    <Text style={styles.buttonText}>Deletar Cliente</Text>
+                                </TouchableOpacity>
+                            )}
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>

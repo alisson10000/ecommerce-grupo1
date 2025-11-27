@@ -2,8 +2,26 @@ import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
-  header: { padding: 20, backgroundColor: "#fff", elevation: 2 },
-  headerTitle: { fontSize: 24, fontWeight: "bold" },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#4CAF50',
+    elevation: 2
+  },
+  headerTitle: { fontSize: 24, fontWeight: "bold", color: "#fff" },
+  logoutButton: {
+    backgroundColor: '#f44336',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14
+  },
   searchInput: {
     margin: 16,
     padding: 12,
@@ -33,6 +51,22 @@ export default StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 4,
+  },
+  fabBackup: {
+    position: 'absolute',
+    right: 20,
+    bottom: 100,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2196F3',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   fabText: { color: "#fff", fontSize: 32, marginTop: -4 },
   modalContainer: {
@@ -69,5 +103,10 @@ export default StyleSheet.create({
   },
   cancelButton: { backgroundColor: "#ccc" },
   saveButton: { backgroundColor: "#007bff" },
+  deleteButton: {
+    backgroundColor: '#f44336',
+    marginTop: 10,
+    width: '100%',
+  },
   buttonText: { color: "#fff", fontWeight: "bold" },
 });

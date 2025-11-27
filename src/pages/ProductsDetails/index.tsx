@@ -48,8 +48,10 @@ function normalizeImageUrl(url: string | null | undefined, productId: number): s
 }
 
 export default function ProductDetails({ route }: Props) {
-  const { product: initialProduct } = route.params;
-  const [product, setProduct] = React.useState<Product>(initialProduct);
+  const { productId } = route.params;
+  const [product, setProduct] = React.useState<Product | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const { addToCart } = useCart();
   const navigation = useNavigation();
   const [isAdding, setIsAdding] = React.useState(false);
@@ -61,7 +63,35 @@ export default function ProductDetails({ route }: Props) {
   const [imageKey, setImageKey] = React.useState(0);
   const [imageSource, setImageSource] = React.useState<{ uri: string } | null>(null);
 
+  React.useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const productData = await getProductById(Number(productId));
+
+        // Normalize image URL
+        const normalizedProduct = {
+          ...productData,
+          foto: normalizeImageUrl(productData.foto, productData.id)
+        };
+
+        setProduct(normalizedProduct);
+      } catch (err: any) {
+        const msg = err.message || "Erro ao carregar produto.";
+        setError(msg);
+        Alert.alert("Erro", msg);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [productId]);
+
   const handleAddToCart = async () => {
+    if (!product) return;
+
     setIsAdding(true);
     try {
       addToCart({
@@ -80,6 +110,8 @@ export default function ProductDetails({ route }: Props) {
   };
 
   const handleDeletePress = () => {
+    if (!product) return;
+
     Alert.alert(
       "Confirmar Exclusão",
       `Tem certeza que deseja excluir o produto "${product.nome}"?`,
@@ -100,6 +132,8 @@ export default function ProductDetails({ route }: Props) {
   };
 
   const handleConfirmDelete = async () => {
+    if (!product) return;
+
     if (productNameInput.trim() !== product.nome.trim()) {
       Alert.alert(
         "Nome incorreto",
@@ -127,7 +161,7 @@ export default function ProductDetails({ route }: Props) {
       console.error("Erro ao excluir produto:", error);
       Alert.alert(
         "Erro",
-        error.response?.data?.message || "Não foi possível excluir o produto. Tente novamente."
+        error.message || "Não foi possível excluir o produto. Tente novamente."
       );
     } finally {
       setIsDeleting(false);
@@ -137,6 +171,8 @@ export default function ProductDetails({ route }: Props) {
   };
 
   const handleProdutoEditado = async () => {
+    if (!product) return;
+
     try {
       console.log("=== ATUALIZANDO PRODUTO APÓS EDIÇÃO ===");
 
@@ -190,6 +226,31 @@ export default function ProductDetails({ route }: Props) {
       );
     }
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#2a9d8f" />
+        <Text style={{ marginTop: 10, color: '#666' }}>Carregando produto...</Text>
+      </View>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text style={{ color: '#e63946', fontSize: 16, textAlign: 'center', marginBottom: 20 }}>
+          {error || "Produto não encontrado"}
+        </Text>
+        <TouchableOpacity
+          style={{ backgroundColor: '#2a9d8f', padding: 15, borderRadius: 8 }}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Voltar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const hasStock = (product.quantidadeEstoque ?? 0) > 0;
 

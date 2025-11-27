@@ -1,7 +1,9 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Text } from "react-native";
 import { useTheme } from "../hooks/useTheme";
-
+import Header from "../components/Header";
+import Clientes from "../pages/Clientes"
 import Home from "../pages/Home";
 import Products from "../pages/Products";
 import Cart from "../pages/Cart";
@@ -15,7 +17,7 @@ export default function TabRoutes() {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.textSecondary,
         tabBarStyle: {
@@ -24,9 +26,76 @@ export default function TabRoutes() {
         },
       }}
     >
-      <Tab.Screen name="Home" component={Home} options={{ tabBarLabel: 'Início' }} />
-      <Tab.Screen name="Products" component={Products} options={{ tabBarLabel: 'Produtos' }} />
-      <Tab.Screen name="Cart" component={Cart} options={{ tabBarLabel: 'Carrinho' }} />
+      <Tab.Screen 
+        name="Home" 
+        component={Home}
+        options={{
+          tabBarLabel: 'Início',
+          tabBarIcon: ({ size }) => <HomeIcon size={size} />,
+          header: () => <Header title="Início" showBackButton={false} />,
+        }}
+      />
+      
+      <Tab.Screen 
+        name="Products" 
+        component={Products}
+        options={{
+          tabBarLabel: 'Produtos',
+          tabBarIcon: ({ size }) => <ProductsIcon size={size} />,
+          header: () => <Header title="Produtos" showBackButton={false} />,
+        }}
+      />
+      
+      <Tab.Screen 
+        name="Cart" 
+        component={Cart}
+        options={{
+          tabBarLabel: 'Carrinho',
+          tabBarIcon: ({ size }) => <CartIcon size={size} />,
+          header: () => <Header title="Carrinho" showBackButton={false} />,
+        }}
+      />
+      
+      <Tab.Screen
+        name="ChatBot"
+        component={ChatBot}
+        options={{
+          tabBarLabel: "Assistente",
+          tabBarIcon: ({ size }) => <ChatIcon size={size} />, 
+          header: () => <Header title="Assistente IA" showBackButton={false} />, 
+        }}
+      />
+
+      <Tab.Screen
+        name="Clientes"
+        component={Clientes}
+        options={{ 
+          tabBarLabel: "Clientes",
+          tabBarIcon: ({ size }) => <ClientIcon size={size} />, 
+          header: () => <Header title="Clientes" showBackButton={false} />,
+         }}
+      />
     </Tab.Navigator>
   );
 }
+
+// Ícones
+const HomeIcon = ({ size }: { size: number }) => (
+  <Text style={{ fontSize: size }}>🏠</Text>
+);
+
+const ProductsIcon = ({ size }: { size: number }) => (
+  <Text style={{ fontSize: size }}>📦</Text>
+);
+
+const CartIcon = ({ size }: { size: number }) => (
+  <Text style={{ fontSize: size }}>🛒</Text>
+);
+
+const ChatIcon = ({ size }: { size: number }) => (
+  <Text style={{ fontSize: size }}>🤖</Text>
+);
+
+const ClientIcon = ({ size }: { size: number }) => (
+  <Text style={{ fontSize: size }}>👥</Text>
+);

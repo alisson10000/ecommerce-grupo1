@@ -8,21 +8,19 @@ export default function ProductCard({ product, onPress }) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       {!imageError ? (
-        <Image 
-          source={{ uri: product.image }} 
+        <Image
+          source={{ uri: product.image }}
           style={styles.image}
-          onError={() => {
-            console.log("Erro ao carregar imagem:", product.image);
-            setImageError(true);
-          }}
+          onError={() => setImageError(true)}
         />
       ) : (
-        <View style={[styles.image, { backgroundColor: '#ddd', justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: '#999' }}>Sem imagem</Text>
+        <View style={[styles.image, { backgroundColor: "#ddd", justifyContent: "center", alignItems: "center" }]}>
+          <Text style={{ color: "#999" }}>Sem imagem</Text>
         </View>
       )}
+
       <Text numberOfLines={1} style={styles.title}>{product.title}</Text>
-      <Text style={styles.price}>R$ {product.price.toFixed(2).replace(".", ",")}</Text>
+      <Text style={styles.price}>R$ {product.price?.toFixed(2).replace(".", ",")}</Text>
     </TouchableOpacity>
   );
 }

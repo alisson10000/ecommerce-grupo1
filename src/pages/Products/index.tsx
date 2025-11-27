@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   View,
   FlatList,
@@ -9,20 +9,19 @@ import {
   Alert,
   Modal,
   ScrollView,
-  RefreshControl
+  RefreshControl,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import ProductCard from "../../components/ProductCard";
-import { getProducts, Product } from "../../api/products";
-import { api } from "../../api/api";
-import styles from "./styles";
-
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { RootStackParamList, RootTabParamList } from "../../navigation/types";
+import ProductCard from "../../components/ProductCard";
+import { getProducts, Product } from "../../api/products";
+import { api } from "../../api/api";
+import styles from "./styles";
 import NovoProduto from "../NovoProduto";
+import { RootStackParamList, RootTabParamList } from "../../navigation/types";
 
 type ProductsScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<RootTabParamList, "Products">,
@@ -44,61 +43,61 @@ export default function Products({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage] = useState(10);
+  const itemsPerPage = 10;
   const [loadingMore, setLoadingMore] = useState(false);
 
   const loadProducts = async (shouldSpin = true) => {
     try {
       if (shouldSpin) setLoading(true);
       setError(null);
+
       const data = await getProducts();
 
-      const normalizedData = data.map(product => ({
+      const normalizedData = data.map((product) => ({
         ...product,
         foto: product.foto
-          ? product.foto.replace(/http:\/\/localhost:8080/g, api.defaults.baseURL || 'http://192.168.100.5:8080')
-          : `${api.defaults.baseURL || 'http://192.168.100.5:8080'}/uploads/produtos/${product.id}.jpg`
+          ? product.foto.replace(
+            /http:\/\/localhost:8080/g,
+            api.defaults.baseURL || "http://192.168.100.5:8080"
+          )
+          : `${api.defaults.baseURL || "http://192.168.100.5:8080"}/uploads/produtos/${product.id}.jpg`,
       }));
 
       setProducts(normalizedData);
     } catch (err: any) {
-      const errorMessage = err.message || "Erro ao carregar produtos. Verifique se a API está rodando em http://localhost:8080";
-      setError(errorMessage);
-      Alert.alert("Erro", errorMessage);
+      const msg =
+        err.message ||
+        "Erro ao carregar produtos. Verifique se a API está rodando.";
+      setError(msg);
+      Alert.alert("Erro", msg);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadProducts(false);
   }, []);
 
   useFocusEffect(
-    React.useCallback(() => {
-      console.log("Tela de produtos recebeu foco - recarregando produtos...");
+    useCallback(() => {
       const timer = setTimeout(() => {
         loadProducts(products.length === 0);
       }, 300);
-
       return () => clearTimeout(timer);
     }, [products.length])
   );
-  const categories = useMemo(() => {
-    const categoryMap = new Map<number, { id: number; nome: string }>();
 
-    products.forEach((product) => {
-      if (product.categoria) {
-        const cat = product.categoria;
-        if (!categoryMap.has(cat.id)) {
-          categoryMap.set(cat.id, cat);
-        }
+  const categories = useMemo(() => {
+    const map = new Map<number, { id: number; nome: string }>();
+    products.forEach((p) => {
+      if (p.categoria && !map.has(p.categoria.id)) {
+        map.set(p.categoria.id, p.categoria);
       }
     });
-
-    return Array.from(categoryMap.values()).sort((a, b) =>
+    return Array.from(map.values()).sort((a, b) =>
       a.nome.localeCompare(b.nome)
     );
   }, [products]);
@@ -110,17 +109,16 @@ export default function Products({ navigation }: Props) {
         .includes(searchText.toLowerCase());
 
       const matchesCategory =
-        selectedCategory === null || product.categoria?.id === selectedCategory;
+        selectedCategory === null ||
+        product.categoria?.id === selectedCategory;
 
       return matchesName && matchesCategory;
     });
   }, [products, searchText, selectedCategory]);
 
   const paginatedProducts = useMemo(() => {
-    const startIndex = 0;
-    const endIndex = (currentPage + 1) * itemsPerPage;
-    return filteredProducts.slice(startIndex, endIndex);
-  }, [filteredProducts, currentPage, itemsPerPage]);
+    return filteredProducts.slice(0, (currentPage + 1) * itemsPerPage);
+  }, [filteredProducts, currentPage]);
 
   const hasMore = paginatedProducts.length < filteredProducts.length;
 
@@ -128,7 +126,7 @@ export default function Products({ navigation }: Props) {
     if (!loadingMore && hasMore) {
       setLoadingMore(true);
       setTimeout(() => {
-        setCurrentPage(prev => prev + 1);
+        setCurrentPage((prev) => prev + 1);
         setLoadingMore(false);
       }, 300);
     }
@@ -137,15 +135,6 @@ export default function Products({ navigation }: Props) {
   useEffect(() => {
     setCurrentPage(0);
   }, [searchText, selectedCategory]);
-
-  const handleCategoryPress = (categoryId: number | null) => {
-    setSelectedCategory(categoryId);
-    setMostrarModalCategorias(false);
-  };
-
-  const handleProdutoCriado = () => {
-    loadProducts();
-  };
 
   if (loading) {
     return (
@@ -183,7 +172,6 @@ export default function Products({ navigation }: Props) {
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar produtos..."
-          placeholderTextColor="#999"
           value={searchText}
           onChangeText={setSearchText}
         />
@@ -196,38 +184,74 @@ export default function Products({ navigation }: Props) {
             <Text style={styles.categorySelectorButtonText}>
               {selectedCategory === null
                 ? "Todas as categorias"
-                : categories.find(cat => cat.id === selectedCategory)?.nome || "Selecionar categoria"}
+                : categories.find((c) => c.id === selectedCategory)?.nome}
             </Text>
-            <Text style={styles.categorySelectorIcon}>▼</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <Modal
-        visible={mostrarModalCategorias}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setMostrarModalCategorias(false)}
-      >
+      <FlatList
+        data={paginatedProducts}
+        numColumns={2}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <ProductCard
+            product={{
+              id: item.id,
+              title: item.nome,
+              price: item.preco,
+              image: item.foto || "https://via.placeholder.com/150",
+              description: item.descricao,
+              category: item.categoria?.nome,
+            }}
+            onPress={() =>
+              navigation.navigate("ProductDetails", {
+                productId: String(item.id),
+              })
+            }
+          />
+        )}
+        onEndReached={loadMoreProducts}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color="#2a9d8f" />
+          ) : null
+        }
+      />
+
+      <NovoProduto
+        navigation={navigation}
+        visivel={mostrarModalNovoProduto}
+        aoFechar={() => setMostrarModalNovoProduto(false)}
+        aoProdutoCriado={loadProducts}
+      />
+
+      <Modal visible={mostrarModalCategorias} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Selecionar Categoria</Text>
               <TouchableOpacity
-                onPress={() => setMostrarModalCategorias(false)}
                 style={styles.modalCloseButton}
+                onPress={() => setMostrarModalCategorias(false)}
               >
                 <Text style={styles.modalCloseButtonText}>✕</Text>
               </TouchableOpacity>
             </View>
-
             <ScrollView style={styles.modalScrollView}>
               <TouchableOpacity
                 style={[
                   styles.modalCategoryItem,
                   selectedCategory === null && styles.modalCategoryItemActive
                 ]}
-                onPress={() => handleCategoryPress(null)}
+                onPress={() => {
+                  setSelectedCategory(null);
+                  setMostrarModalCategorias(false);
+                }}
               >
                 <Text
                   style={[
@@ -241,25 +265,27 @@ export default function Products({ navigation }: Props) {
                   <Text style={styles.modalCategoryItemCheck}>✓</Text>
                 )}
               </TouchableOpacity>
-
-              {categories.map((category) => (
+              {categories.map((cat) => (
                 <TouchableOpacity
-                  key={category.id}
+                  key={cat.id}
                   style={[
                     styles.modalCategoryItem,
-                    selectedCategory === category.id && styles.modalCategoryItemActive
+                    selectedCategory === cat.id && styles.modalCategoryItemActive
                   ]}
-                  onPress={() => handleCategoryPress(category.id)}
+                  onPress={() => {
+                    setSelectedCategory(cat.id);
+                    setMostrarModalCategorias(false);
+                  }}
                 >
                   <Text
                     style={[
                       styles.modalCategoryItemText,
-                      selectedCategory === category.id && styles.modalCategoryItemTextActive
+                      selectedCategory === cat.id && styles.modalCategoryItemTextActive
                     ]}
                   >
-                    {category.nome}
+                    {cat.nome}
                   </Text>
-                  {selectedCategory === category.id && (
+                  {selectedCategory === cat.id && (
                     <Text style={styles.modalCategoryItemCheck}>✓</Text>
                   )}
                 </TouchableOpacity>
@@ -268,63 +294,6 @@ export default function Products({ navigation }: Props) {
           </View>
         </View>
       </Modal>
-
-      {filteredProducts.length > 0 ? (
-        <FlatList
-          data={paginatedProducts}
-          numColumns={2}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={["#2a9d8f"]}
-              tintColor="#2a9d8f"
-            />
-          }
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <ProductCard
-              product={{
-                id: item.id,
-                title: item.nome,
-                price: item.preco,
-                image: item.foto || "https://via.placeholder.com/150",
-                description: item.descricao,
-                category: item.categoria?.nome,
-              }}
-              onPress={() =>
-                navigation.navigate("ProductDetails", { product: item })
-              }
-            />
-          )}
-          onEndReached={loadMoreProducts}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={() => {
-            if (!loadingMore) return null;
-            return (
-              <View style={styles.footerLoader}>
-                <ActivityIndicator size="small" color="#2a9d8f" />
-                <Text style={styles.footerLoaderText}>Carregando mais produtos...</Text>
-              </View>
-            );
-          }}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
-            {error
-              ? error
-              : "Nenhum produto encontrado com os filtros selecionados."}
-          </Text>
-        </View>
-      )}
-
-      <NovoProduto
-        navigation={navigation}
-        visivel={mostrarModalNovoProduto}
-        aoFechar={() => setMostrarModalNovoProduto(false)}
-        aoProdutoCriado={handleProdutoCriado}
-      />
     </View>
   );
 }
