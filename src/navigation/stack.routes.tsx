@@ -1,25 +1,58 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Header from "../components/Header";
 
 import Login from "../pages/Login";
 import TabRoutes from "./tab.routes";
 import ProductDetails from "../pages/ProductsDetails";
 import Payment from "../pages/Payment";
-import Clientes from "../pages/Clientes";
-import BackupClientes from "../pages/BackupClientes";
 import { RootStackParamList } from "./types";
 
-const Stack: any = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function StackRoutes() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator 
+      screenOptions={{ 
+        headerShown: false 
+      }}
+    >
+      {/* Login sem header */}
       <Stack.Screen name="Login" component={Login} />
+      
+      {/* HomeTabs sem header (tabs já tem navegação própria) */}
       <Stack.Screen name="HomeTabs" component={TabRoutes} />
-      <Stack.Screen name="ProductDetails" component={ProductDetails} />
-      <Stack.Screen name="Payment" component={Payment} />
-      <Stack.Screen name="Clientes" component={Clientes} />
-      <Stack.Screen name="BackupClientes" component={BackupClientes} />
+      
+      {/* Telas com header customizado */}
+      <Stack.Screen 
+        name="ProductDetails" 
+        component={ProductDetails}
+        options={({ navigation }) => ({
+          headerShown: true,
+          header: () => (
+            <Header 
+              title="Detalhes do Produto" 
+              showBackButton 
+              onBackPress={() => navigation.goBack()}
+            />
+          ),
+        })}
+      />
+      
+      <Stack.Screen 
+        name="Payment" 
+        component={Payment}
+        options={({ navigation }) => ({
+          headerShown: true,
+          header: () => (
+            <Header 
+              title="Pagamento" 
+              showBackButton 
+              onBackPress={() => navigation.goBack()}
+            />
+          ),
+        })}
+      />
     </Stack.Navigator>
   );
 }

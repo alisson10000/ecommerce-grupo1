@@ -17,7 +17,7 @@ export type Product = {
 };
 
 function normalizeImageUrl(url: string | null | undefined, productId: number): string {
-  const baseURL = api.defaults.baseURL || 'http://192.168.0.103:8080';
+  const baseURL = api.defaults.baseURL || 'http://192.168.0.112:8080';
   
   if (!url || url.trim() === '') {
     return `${baseURL}/imagens/${productId}.jpg?t=${Date.now()}`;
