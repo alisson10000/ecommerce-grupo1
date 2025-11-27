@@ -20,7 +20,7 @@ import styles from './styles';
 export default function Clientes() {
     const navigation = useNavigation<any>();
     const { logout } = useAuth();
-    const { clientes, loadClientes, addCliente, updateCliente, syncStatus, fetchAddressByCep } = useClientes();
+    const { clientes, loadClientes, addCliente, updateCliente, deleteCliente, syncStatus, fetchAddressByCep, syncClientes } = useClientes();
     const [searchText, setSearchText] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
@@ -164,6 +164,56 @@ export default function Clientes() {
         );
     };
 
+    const handleBackup = () => {
+        Alert.alert(
+            'Fazer Backup',
+            'Deseja realmente fazer backup de todos os clientes para o MockAPI?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Confirmar',
+                    onPress: async () => {
+                        try {
+                            await syncClientes();
+                            Alert.alert('Sucesso', 'Backup realizado com sucesso!');
+                        } catch (error) {
+                            Alert.alert('Erro', 'Falha ao fazer backup.');
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleDelete = async () => {
+        if (!editingCliente || !editingCliente.id) {
+            Alert.alert('Erro', 'Não é possível deletar este cliente.');
+            return;
+        }
+
+        Alert.alert(
+            'Confirmar Exclusão',
+            `Deseja realmente excluir o cliente ${editingCliente.nome}? Esta ação não pode ser desfeita.`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Excluir',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteCliente(editingCliente.id!);
+                            Alert.alert('Sucesso', 'Cliente excluído com sucesso!');
+                            setModalVisible(false);
+                            await loadClientes();
+                        } catch (error) {
+                            Alert.alert('Erro', 'Falha ao excluir cliente. Verifique se a API está rodando.');
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     const renderItem = ({ item }: { item: Cliente }) => (
         <TouchableOpacity style={styles.card} onPress={() => handleOpenModal(item)}>
             <Text style={styles.cardTitle}>{item.nome}</Text>
@@ -203,9 +253,15 @@ export default function Clientes() {
                 />
             )}
 
-            <TouchableOpacity style={styles.fab} onPress={() => handleOpenModal()}>
-                <Text style={styles.fabText}>+</Text>
-            </TouchableOpacity>
+            <View>
+                <TouchableOpacity style={styles.fabBackup} onPress={handleBackup}>
+                    <Text style={styles.fabText}>☁️</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.fab} onPress={() => handleOpenModal()}>
+                    <Text style={styles.fabText}>+</Text>
+                </TouchableOpacity>
+            </View>
 
             <Modal visible={modalVisible} animationType="slide" transparent={true}>
                 <View style={styles.modalContainer}>
@@ -250,6 +306,12 @@ export default function Clientes() {
                                     <Text style={styles.buttonText}>Salvar</Text>
                                 </TouchableOpacity>
                             </View>
+
+                            {editingCliente && (
+                                <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={handleDelete}>
+                                    <Text style={styles.buttonText}>Deletar Cliente</Text>
+                                </TouchableOpacity>
+                            )}
                         </ScrollView>
                     </View>
                 </View>

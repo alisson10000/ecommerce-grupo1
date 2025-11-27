@@ -1,9 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { api } from '../../api/api';
 import { Cliente, getClientes as getClientesMock, createCliente as createClienteMock, updateCliente as updateClienteMock } from '../../api/mockApi';
-
-const SPRING_API_URL = 'http://localhost:8080/api';
 
 type SyncStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -34,6 +32,7 @@ export interface ClienteContextData {
     loadClientes: () => Promise<void>;
     addCliente: (cliente: ClienteFormData) => Promise<void>;
     updateCliente: (id: number, cliente: Partial<ClienteFormData>) => Promise<void>;
+    deleteCliente: (id: number) => Promise<void>;
     syncClientes: () => Promise<void>;
     restoreBackup: () => Promise<void>;
     backupClientes: Cliente[];
@@ -79,7 +78,7 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const fetchSpringClientes = async (): Promise<Cliente[]> => {
         try {
-            const response = await axios.get(`${SPRING_API_URL}/clientes`);
+            const response = await api.get('/clientes', { timeout: 30000 });
             return response.data;
         } catch (error) {
             console.error('Erro ao buscar clientes da API Spring Boot:', error);
@@ -102,30 +101,84 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const addCliente = async (clienteData: ClienteFormData) => {
         try {
-            const response = await axios.post(`${SPRING_API_URL}/clientes`, clienteData);
+            const payload = {
+                nome: clienteData.nome,
+                email: clienteData.email,
+                cpf: clienteData.cpf,
+                telefone: clienteData.telefone,
+                numero: clienteData.numero,
+                complemento: clienteData.complemento || '',
+                endereco: {
+                    cep: clienteData.cep
+                }
+            };
+
+            console.log('Enviando payload para API:', JSON.stringify(payload, null, 2));
+
+            const response = await api.post('/clientes', payload);
             const newCliente: Cliente = response.data;
             const newClientes = [...clientes, newCliente];
             await saveClientesToStorage(newClientes);
             console.log('Cliente criado com sucesso:', newCliente);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Erro ao adicionar cliente na API Spring Boot:', error);
+            if (error.response) {
+                console.error('Status:', error.response.status);
+                console.error('Dados do erro:', error.response.data);
+            }
             throw error;
         }
     };
 
     const updateCliente = async (id: number, clienteData: Partial<ClienteFormData>) => {
         try {
-            const response = await axios.put(`${SPRING_API_URL}/clientes/${id}`, clienteData);
+            const payload: any = {
+                nome: clienteData.nome,
+                email: clienteData.email,
+                cpf: clienteData.cpf,
+                telefone: clienteData.telefone,
+                numero: clienteData.numero,
+                complemento: clienteData.complemento || ''
+            };
+
+            if (clienteData.cep) {
+                payload.endereco = {
+                    cep: clienteData.cep
+                };
+            }
+
+            console.log('Enviando payload de atualização:', JSON.stringify(payload, null, 2));
+
+            const response = await api.put(`/clientes/${id}`, payload);
             const updatedCliente: Cliente = response.data;
             const newClientes = clientes.map(c => c.id === id ? updatedCliente : c);
             await saveClientesToStorage(newClientes);
             console.log('Cliente atualizado com sucesso:', updatedCliente);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Erro ao atualizar cliente na API Spring Boot:', error);
+            if (error.response) {
+                console.error('Status:', error.response.status);
+                console.error('Dados do erro:', error.response.data);
+            }
             throw error;
         }
     };
 
+    const deleteCliente = async (id: number) => {
+        try {
+            await api.delete(`/clientes/${id}`);
+            const newClientes = clientes.filter(c => c.id !== id);
+            await saveClientesToStorage(newClientes);
+            console.log('Cliente deletado com sucesso');
+        } catch (error: any) {
+            console.error('Erro ao deletar cliente na API Spring Boot:', error);
+            if (error.response) {
+                console.error('Status:', error.response.status);
+                console.error('Dados do erro:', error.response.data);
+            }
+            throw error;
+        }
+    };
 
 
     const syncClientes = async () => {
@@ -237,6 +290,7 @@ export const ClienteProvider: React.FC<{ children: React.ReactNode }> = ({ child
             loadClientes,
             addCliente,
             updateCliente,
+            deleteCliente,
             syncClientes,
             restoreBackup,
             backupClientes,
