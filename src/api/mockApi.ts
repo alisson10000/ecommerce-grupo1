@@ -16,7 +16,15 @@ export type Cliente = {
     telefone: string;
     numero: string;
     complemento?: string;
-    endereco_id: number;
+    endereco_id?: number;
+    endereco?: {
+        id: number;
+        logradouro: string;
+        bairro: string;
+        cidade: string;
+        uf: string;
+        cep: string;
+    };
 };
 
 export const getClientes = async (): Promise<Cliente[]> => {

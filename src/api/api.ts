@@ -2,11 +2,11 @@ import axios from "axios";
 import { Platform } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // 👈 Novo: Para pegar o token
 
-const API_BASE_URL = "http://192.168.0.112:8080"; // Mantenha o seu IP
+const API_BASE_URL = "http://192.168.1.11:8080"; // Mantenha o seu IP
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -45,12 +45,12 @@ api.interceptors.response.use(
 
       // ⚠️ Novo: Trata especificamente o erro 401 (Não Autorizado)
       if (error.response.status === 401) {
-          // Aqui você pode adicionar a lógica para deslogar o usuário automaticamente
+        // Aqui você pode adicionar a lógica para deslogar o usuário automaticamente
       }
       return Promise.reject(new Error(message));
     } else if (error.request) {
       // Lógica de erro de rede (servidor desligado, IP incorreto, etc.)
-      const platformHint = Platform.OS === 'android' 
+      const platformHint = Platform.OS === 'android'
         ? "http://10.0.2.2:8080 (Android Emulator) ou IP da sua máquina (dispositivo físico)"
         : "http://localhost:8080";
       return Promise.reject(

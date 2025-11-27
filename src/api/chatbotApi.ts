@@ -1,7 +1,7 @@
 import axios from 'axios';
 // Usando o IP da máquina na rede local, conforme combinado.
 // Certifique-se de que este IP está correto e acessível pela sua máquina.
-const BASE_URL = 'http://192.168.0.112:8000/assistente/chat'; 
+const BASE_URL = 'http://192.168.1.11:8000/assistente/chat'; 
 
 /**
  * Envia uma mensagem de usuário para a API de IA, incluindo o ID do vendedor.

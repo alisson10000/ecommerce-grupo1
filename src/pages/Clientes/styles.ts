@@ -52,6 +52,22 @@ export default StyleSheet.create({
     alignItems: "center",
     elevation: 4,
   },
+  fabBackup: {
+    position: 'absolute',
+    right: 20,
+    bottom: 100,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2196F3',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
   fabText: { color: "#fff", fontSize: 32, marginTop: -4 },
   modalContainer: {
     flex: 1,
@@ -87,5 +103,10 @@ export default StyleSheet.create({
   },
   cancelButton: { backgroundColor: "#ccc" },
   saveButton: { backgroundColor: "#007bff" },
+  deleteButton: {
+    backgroundColor: '#f44336',
+    marginTop: 10,
+    width: '100%',
+  },
   buttonText: { color: "#fff", fontWeight: "bold" },
 });
