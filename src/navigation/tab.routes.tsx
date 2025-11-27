@@ -7,7 +7,7 @@ import Header from "../components/Header";
 import Home from "../pages/Home";
 import Products from "../pages/Products";
 import Cart from "../pages/Cart";
-import { ChatBot } from "../pages/ChatBot"; // ← CORRIGIDO: Import do ChatBot
+import { ChatBot } from "../pages/ChatBot";
 
 const Tab = createBottomTabNavigator();
 
@@ -56,14 +56,13 @@ export default function TabRoutes() {
         }}
       />
       
-      {/* CORRIGIDO: Adicionado tabBarIcon e header */}
       <Tab.Screen
         name="ChatBot"
         component={ChatBot}
         options={{
           tabBarLabel: "Assistente",
-          tabBarIcon: ({ size }) => <ChatIcon size={size} />, // ← ADICIONADO
-          header: () => <Header title="Assistente IA" showBackButton={false} />, // ← ADICIONADO
+          tabBarIcon: ({ size }) => <ChatIcon size={size} />, 
+          header: () => <Header title="Assistente IA" showBackButton={false} />, 
         }}
       />
     </Tab.Navigator>
@@ -83,7 +82,6 @@ const CartIcon = ({ size }: { size: number }) => (
   <Text style={{ fontSize: size }}>🛒</Text>
 );
 
-// CORRIGIDO: Ícone do chatbot agora tem emoji
 const ChatIcon = ({ size }: { size: number }) => (
   <Text style={{ fontSize: size }}>🤖</Text>
 );

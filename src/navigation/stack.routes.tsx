@@ -17,13 +17,10 @@ export default function StackRoutes() {
         headerShown: false 
       }}
     >
-      {/* Login sem header */}
       <Stack.Screen name="Login" component={Login} />
       
-      {/* HomeTabs sem header (tabs já tem navegação própria) */}
       <Stack.Screen name="HomeTabs" component={TabRoutes} />
       
-      {/* Telas com header customizado */}
       <Stack.Screen 
         name="ProductDetails" 
         component={ProductDetails}
