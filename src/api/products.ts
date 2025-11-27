@@ -31,7 +31,7 @@ export type UpdateProductDTO = {
 };
 
 function normalizeImageUrl(url: string | null | undefined, productId: number): string {
-  const baseURL = api.defaults.baseURL || 'http://192.168.100.5:8080';
+  const baseURL = api.defaults.baseURL || 'http://192.168.1.11:8080';
   
   if (!url || url.trim() === '') {
     return `${baseURL}/imagens/${productId}.jpg?t=${Date.now()}`;
