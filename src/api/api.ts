@@ -2,7 +2,7 @@ import axios from "axios";
 import { Platform } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // 👈 Novo: Para pegar o token
 
-const API_BASE_URL = "http://192.168.0.103:8080"; // Mantenha o seu IP
+const API_BASE_URL = "http://192.168.0.112:8080"; // Mantenha o seu IP
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

@@ -9,8 +9,16 @@ export default StyleSheet.create({
     paddingTop: 50,
     elevation: 2,
   },
+  leftContainer: {
+    width: 80,
+    alignItems: 'flex-start',
+  },
+  placeholder: {
+    width: 80,
+  },
   backButton: {
-    marginRight: 10,
+    paddingVertical: 8,
+    paddingRight: 10,
   },
   backText: {
     fontSize: 16,
@@ -20,11 +28,16 @@ export default StyleSheet.create({
     flex: 1,
     fontSize: 20,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   themeButton: {
-    padding: 8,
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
   },
   themeIcon: {
-    fontSize: 20,
+    fontSize: 24,
   },
 });
