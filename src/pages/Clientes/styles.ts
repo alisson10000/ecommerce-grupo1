@@ -2,8 +2,26 @@ import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
-  header: { padding: 20, backgroundColor: "#fff", elevation: 2 },
-  headerTitle: { fontSize: 24, fontWeight: "bold" },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#4CAF50',
+    elevation: 2
+  },
+  headerTitle: { fontSize: 24, fontWeight: "bold", color: "#fff" },
+  logoutButton: {
+    backgroundColor: '#f44336',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14
+  },
   searchInput: {
     margin: 16,
     padding: 12,

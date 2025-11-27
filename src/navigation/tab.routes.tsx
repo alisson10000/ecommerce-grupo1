@@ -66,6 +66,12 @@ export default function TabRoutes() {
           header: () => <Header title="Assistente IA" showBackButton={false} />, // ← ADICIONADO
         }}
       />
+
+      <Tab.Screen
+        name="Clientes"
+        component={Clientes}
+        options={{ tabBarLabel: "Clientes" }}
+      />
     </Tab.Navigator>
   );
 }
