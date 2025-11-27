@@ -275,7 +275,7 @@ export default function NovoProduto({
                       style={[
                         estilos.botaoCategoriaTexto,
                         categoriaId === categoria.id &&
-                          estilos.botaoCategoriaTextoAtivo,
+                        estilos.botaoCategoriaTextoAtivo,
                       ]}
                     >
                       {categoria.nome}

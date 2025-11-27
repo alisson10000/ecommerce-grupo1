@@ -9,7 +9,7 @@ export default function ProductCard({ product, onPress }) {
     <TouchableOpacity style={styles.container} onPress={onPress}>
       {!imageError ? (
         <Image
-          source={{ uri: product.foto }}
+          source={{ uri: product.image }}
           style={styles.image}
           onError={() => setImageError(true)}
         />
@@ -19,8 +19,8 @@ export default function ProductCard({ product, onPress }) {
         </View>
       )}
 
-      <Text numberOfLines={1} style={styles.title}>{product.nome}</Text>
-      <Text style={styles.price}>R$ {product.preco?.toFixed(2).replace(".", ",")}</Text>
+      <Text numberOfLines={1} style={styles.title}>{product.title}</Text>
+      <Text style={styles.price}>R$ {product.price?.toFixed(2).replace(".", ",")}</Text>
     </TouchableOpacity>
   );
 }

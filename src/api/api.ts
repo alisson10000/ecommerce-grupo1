@@ -1,8 +1,8 @@
 import axios from "axios";
 import { Platform } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage'; // 👈 Novo: Para pegar o token
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = "http://192.168.1.11:8080"; // Mantenha o seu IP
+const API_BASE_URL = "http://192.168.100.5:8080";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,15 +12,12 @@ export const api = axios.create({
   },
 });
 
-// 🚀 NOVO: Interceptor de Requisição para Inserir o Token JWT
+// Interceptor de Requisição para Inserir o Token JWT
 api.interceptors.request.use(
   async (config) => {
-    // Tenta obter o token salvo após o login
     const token = await AsyncStorage.getItem('@userToken');
 
     if (token) {
-      // Se o token existir, adiciona-o ao cabeçalho Authorization
-      // Formato: Bearer [TOKEN]
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -31,26 +28,27 @@ api.interceptors.request.use(
   }
 );
 
-
-// Interceptor de Resposta (Mantido e Melhorado)
+// Interceptor de Resposta
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Lógica de tratamento de erro que você já tinha (para 4xx, 5xx)
+      // Log detalhado do erro para debug
+      console.log("=== ERRO NA API ===");
+      console.log("Status:", error.response.status);
+      console.log("Dados:", JSON.stringify(error.response.data, null, 2));
+
       const message =
         error.response.data?.message ||
         error.response.data?.error ||
         "Erro ao processar requisição";
 
-      // ⚠️ Novo: Trata especificamente o erro 401 (Não Autorizado)
       if (error.response.status === 401) {
-        // Aqui você pode adicionar a lógica para deslogar o usuário automaticamente
+        // Lógica para deslogar se necessário
       }
       return Promise.reject(new Error(message));
     } else if (error.request) {
-      // Lógica de erro de rede (servidor desligado, IP incorreto, etc.)
-      const platformHint = Platform.OS === 'android'
+      const platformHint = Platform.OS === 'android' 
         ? "http://10.0.2.2:8080 (Android Emulator) ou IP da sua máquina (dispositivo físico)"
         : "http://localhost:8080";
       return Promise.reject(

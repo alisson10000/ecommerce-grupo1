@@ -133,13 +133,13 @@ export default function EditarProduto({
 
     try {
       setCarregando(true);
-      
+
       let uploadRealizado = false;
 
       if (imagemAlterada && imagemUri) {
 
         const isLocalImage = !imagemUri.startsWith('http://') && !imagemUri.startsWith('https://');
-        
+
         if (isLocalImage) {
           try {
             console.log("=== INICIANDO UPLOAD DA IMAGEM ===");
@@ -148,7 +148,7 @@ export default function EditarProduto({
 
             await uploadProductImage(produto.id, imagemUri);
             uploadRealizado = true;
-            
+
             console.log("Upload da imagem realizado com sucesso");
 
             console.log("Aguardando processamento do servidor...");
@@ -180,7 +180,7 @@ export default function EditarProduto({
             console.error("Erro completo:", erroUpload);
             console.error("Response data:", erroUpload.response?.data);
             console.error("Response status:", erroUpload.response?.status);
-            
+
             Alert.alert(
               "Erro no Upload",
               `Erro ao fazer upload da imagem:\n${erroUpload.response?.data?.message || erroUpload.message || "Erro desconhecido"}\n\nTente novamente.`,
@@ -220,9 +220,9 @@ export default function EditarProduto({
       });
 
       Alert.alert(
-        "Sucesso", 
-        uploadRealizado 
-          ? "Produto e imagem atualizados com sucesso!" 
+        "Sucesso",
+        uploadRealizado
+          ? "Produto e imagem atualizados com sucesso!"
           : "Produto atualizado com sucesso!",
         [
           {
@@ -310,10 +310,10 @@ export default function EditarProduto({
               <View style={estilos.containerImagem}>
                 <Image
                   key={`product-image-${produto.id}-${imageKey}`}
-                  source={{ 
-                    uri: imageError 
-                      ? "https://via.placeholder.com/150" 
-                      : imagemUri || "https://via.placeholder.com/150" 
+                  source={{
+                    uri: imageError
+                      ? "https://via.placeholder.com/150"
+                      : imagemUri || "https://via.placeholder.com/150"
                   }}
                   style={estilos.imagemPreview}
                   onError={() => {
@@ -374,7 +374,7 @@ export default function EditarProduto({
                       style={[
                         estilos.botaoCategoriaTexto,
                         categoriaId === categoria.id &&
-                          estilos.botaoCategoriaTextoAtivo,
+                        estilos.botaoCategoriaTextoAtivo,
                       ]}
                     >
                       {categoria.nome}
