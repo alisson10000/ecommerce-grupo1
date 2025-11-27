@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text } from "react-native";
 import { useTheme } from "../hooks/useTheme";
 import Header from "../components/Header";
-
+import Clientes from "../pages/Clientes"
 import Home from "../pages/Home";
 import Products from "../pages/Products";
 import Cart from "../pages/Cart";
@@ -69,7 +69,11 @@ export default function TabRoutes() {
       <Tab.Screen
         name="Clientes"
         component={Clientes}
-        options={{ tabBarLabel: "Clientes" }}
+        options={{ 
+          tabBarLabel: "Clientes",
+          tabBarIcon: ({ size }) => <ClientIcon size={size} />, 
+          header: () => <Header title="Clientes" showBackButton={false} />,
+         }}
       />
     </Tab.Navigator>
   );
@@ -90,4 +94,8 @@ const CartIcon = ({ size }: { size: number }) => (
 
 const ChatIcon = ({ size }: { size: number }) => (
   <Text style={{ fontSize: size }}>🤖</Text>
+);
+
+const ClientIcon = ({ size }: { size: number }) => (
+  <Text style={{ fontSize: size }}>👥</Text>
 );
